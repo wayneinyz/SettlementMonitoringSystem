@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">SettlementMonitoringSystem</string>
+
+    <string name="refresh_list">刷新设备列表</string>
+    <string name="reference_time">参考时间点</string>
+    <string name="input_cdkey">请输入有效CDKEY</string>
+    <string name="button_confirm">确认</string>
+    <string name="version">版本号：2.0</string>
+    <string name="developer">开发团队：东南大学GoodwayHouse</string>
+    <string name="contact">联系方式：15261509896</string>
+    <string name="refresh_data">刷新数据</string>
+    <string name="collect_time">采集时间点</string>
+    <string name="name">沉降监测系统</string>
+    <string name="switch_to">跳转</string>
+    <string name="button_refresh">刷新</string>
+    <string name="value_observe">观测值</string>
+    <string name="value_settlement">沉降值</string>
+</resources>
