@@ -1,4 +1,4 @@
-package com.gh.android.settlementmonitoringsystem;
+package com.gh.android.settlementmonitoringsystem.activity;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,6 +10,8 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.gh.android.settlementmonitoringsystem.R;
 
 import org.json.JSONObject;
 

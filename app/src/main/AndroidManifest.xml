@@ -11,18 +11,18 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".CdkeyActivity"
-            android:parentActivityName=".MainActivity">
+        <activity android:name=".activity.CdkeyActivity"
+            android:parentActivityName=".activity.MainActivity">
         </activity>
-        <activity android:name=".BuildingActivity">
+        <activity android:name=".activity.BuildingActivity">
         </activity>
-        <activity android:name=".LineDrawActivity"
+        <activity android:name=".activity.LineDrawActivity"
             android:screenOrientation="landscape">
         </activity>
     </application>

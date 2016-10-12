@@ -1,4 +1,4 @@
-package com.gh.android.settlementmonitoringsystem;
+package com.gh.android.settlementmonitoringsystem.activity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,6 +19,10 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
+
+import com.gh.android.settlementmonitoringsystem.MyApplication;
+import com.gh.android.settlementmonitoringsystem.R;
+import com.gh.android.settlementmonitoringsystem.model.Device;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -43,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView mRecyclerView;
     private Button mButtonReferenceTime;
 
-    private List<String> mDatas;
+    private List<Device> mDatas;
     Date date;
     private String hour = "";
     private String minute = "";
@@ -163,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public interface OnRecyclerViewItemClickListener {
-        void onItemClick(View view, String tag);
+        void onItemClick(View view, Device tag);
     }
 
     private class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
@@ -180,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     if (mOnItemClickListener != null) {
-                        mOnItemClickListener.onItemClick(v, (String) v.getTag());
+                        mOnItemClickListener.onItemClick(v, (Device) v.getTag());
                     }
                 }
             });
@@ -192,10 +196,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(MyViewHolder holder, int position)
         {
-            String str = mDatas.get(position);
-            String title = str.substring(0, 7);
+            Device device = mDatas.get(position);
+            String title = device.getTitle();
             holder.textView.setText(title);
-            holder.itemView.setTag(str);
+            holder.itemView.setTag(device);
         }
 
         @Override
@@ -243,7 +247,7 @@ public class MainActivity extends AppCompatActivity {
                         response1 = os.toString();
 //                        Log.i(TAG, response1);
 
-                        ArrayList<String> list = new ArrayList<>();
+                        ArrayList<Device> list = new ArrayList<>();
                         JSONObject jsonObject = new JSONObject(response1);
                         response = jsonObject.getJSONObject("data").getString("devices");
                         JSONArray jsonArray = new JSONArray(response);
@@ -251,9 +255,13 @@ public class MainActivity extends AppCompatActivity {
                             JSONObject jsonObject1 = jsonArray.getJSONObject(i);
                             String title = jsonObject1.getString("title");
                             String id = jsonObject1.getString("id");
-                            String data = title + id;
+
+                            Device device = new Device();
+                            device.setId(id);
+                            device.setTitle(title);
+
                             if (!title.equals("CDKEY")) {
-                                list.add(data);
+                                list.add(device);
                             }
                         }
                         Message message = new Message();
@@ -274,13 +282,13 @@ public class MainActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case SHOW_RESPONSE:
-                    ArrayList<String> list = (ArrayList<String>) msg.obj;
+                    ArrayList<Device> list = (ArrayList<Device>) msg.obj;
                     mDatas = list;
                     MyAdapter adapter = new MyAdapter();
                     mRecyclerView.setAdapter(adapter);
                     adapter.setOnItemClickListener(new OnRecyclerViewItemClickListener() {
                         @Override
-                        public void onItemClick(View view, String data) {
+                        public void onItemClick(View view, Device data) {
                             Intent intent = new Intent(MainActivity.this, BuildingActivity.class);
                             intent.putExtra("data", data);
                             startActivity(intent);

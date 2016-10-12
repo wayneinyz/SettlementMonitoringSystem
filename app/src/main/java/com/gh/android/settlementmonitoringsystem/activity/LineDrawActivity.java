@@ -1,4 +1,4 @@
-package com.gh.android.settlementmonitoringsystem;
+package com.gh.android.settlementmonitoringsystem.activity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,6 +16,9 @@ import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.gh.android.settlementmonitoringsystem.MyApplication;
+import com.gh.android.settlementmonitoringsystem.R;
+import com.gh.android.settlementmonitoringsystem.model.Sensor;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
@@ -66,11 +69,11 @@ public class LineDrawActivity extends AppCompatActivity {
         setContentView(R.layout.activity_line_draw);
 
         Intent intent = getIntent();
-        String data = intent.getStringExtra("data");
-        id = data.substring(0, 4);
-        device = data.substring(4, 11);
-        String value = data.substring(11, 16);
-        String time = data.substring(16, 32);
+        Sensor sensor = (Sensor) intent.getSerializableExtra("data");
+        id = sensor.getId();
+        device = intent.getStringExtra("device");
+        double value = sensor.getCurrentValue();
+        String time = sensor.getUpdateAt();
 
         mButtonRefTime = (Button) findViewById(R.id.button_ref_time);
         MyApplication app = (MyApplication) getApplication();
@@ -108,7 +111,7 @@ public class LineDrawActivity extends AppCompatActivity {
         mTextView.setText(time1);
 
         mButton1 = (Button) findViewById(R.id.button1);
-        mButton1.setText(value);
+        mButton1.setText(value + "");
 
         mLineChart = (LineChart) findViewById(R.id.line_chart);
 
@@ -298,7 +301,7 @@ public class LineDrawActivity extends AppCompatActivity {
                         int count1  = count.intValue();
 //                        Log.i(TAG, response2);
 
-                        ArrayList<String> list = new ArrayList<>();
+                        ArrayList<Sensor> list = new ArrayList<>();
 
                         JSONArray jsonArray1 = new JSONArray(response2);
                         for (int i = 0; i < jsonArray1.length(); i++) {
@@ -311,9 +314,12 @@ public class LineDrawActivity extends AppCompatActivity {
                                 JSONObject jsonObject3 = jsonArray2.getJSONObject(j);
                                 String time = jsonObject3.getString("at");
                                 Double value = jsonObject3.getDouble("value");
+                                double value1 = value.doubleValue();
 
-                                String data = value + time;
-                                list.add(data);
+                                Sensor sensor = new Sensor();
+                                sensor.setCurrentValue(value1);
+                                sensor.setUpdateAt(time);
+                                list.add(sensor);
                             }
                         }
 
@@ -336,16 +342,16 @@ public class LineDrawActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case SHOW_RESPONSE:
-                    ArrayList<String> list = (ArrayList<String>) msg.obj;
+                    ArrayList<Sensor> list = (ArrayList<Sensor>) msg.obj;
                     int count = msg.arg1;
 
                     for (int i = 0; i < list.size(); i++) {
-                        String value = list.get(i).substring(0, 5);
-                        Float value1 = Float.valueOf(value);
+                        double value = list.get(i).getCurrentValue();
+                        Float value1 = new Float(value);
                         values.add(value1);
 //                        Log.i(TAG, value1 + "");
 
-                        String time = list.get(i).substring(5, 21);
+                        String time = list.get(i).getUpdateAt();
                         times.add(time);
                     }
 

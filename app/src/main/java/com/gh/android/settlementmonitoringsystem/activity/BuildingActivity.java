@@ -1,4 +1,4 @@
-package com.gh.android.settlementmonitoringsystem;
+package com.gh.android.settlementmonitoringsystem.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,6 +13,11 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.gh.android.settlementmonitoringsystem.MyApplication;
+import com.gh.android.settlementmonitoringsystem.R;
+import com.gh.android.settlementmonitoringsystem.model.Device;
+import com.gh.android.settlementmonitoringsystem.model.Sensor;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -38,7 +43,7 @@ public class BuildingActivity extends AppCompatActivity {
     private Button mButtonRefreshData;
     private RecyclerView mRecyclerViewBuilding;
 
-    private List<String> mDatas;
+    private List<Sensor> mDatas;
     private String device;
 
     @Override
@@ -49,9 +54,9 @@ public class BuildingActivity extends AppCompatActivity {
 
         mTextView = (TextView) findViewById(R.id.data_text_view);
         Intent intent = getIntent();
-        String data = intent.getStringExtra("data");
-        String title = data.substring(0, 7);
-        String id = data.substring(7, 14);
+        Device device1 = (Device) intent.getSerializableExtra("data");
+        String title = device1.getTitle();
+        String id = device1.getId();
         device = id;
         mTextView.setText(title + "  数据");
 
@@ -89,7 +94,7 @@ public class BuildingActivity extends AppCompatActivity {
     }
 
     public interface OnRecyclerViewItemClickListener {
-        void onItemClick(View view, String tag);
+        void onItemClick(View view, Sensor tag);
     }
 
     private class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
@@ -106,7 +111,7 @@ public class BuildingActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     if (mOnItemClickListener != null) {
-                        mOnItemClickListener.onItemClick(v, (String) v.getTag());
+                        mOnItemClickListener.onItemClick(v, (Sensor) v.getTag());
                     }
                 }
             });
@@ -119,13 +124,13 @@ public class BuildingActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(MyViewHolder holder, int position)
         {
-            String str = mDatas.get(position);
-            String id = str.substring(0, 4);
-            String value = str.substring(11, 16);
+            Sensor sensor = mDatas.get(position);
+            String id = sensor.getId();
+            double value = sensor.getCurrentValue();
             holder.mTextView.setText(id);
-            holder.mText1.setText(value);
+            holder.mText1.setText(value + "");
 //            holder.mText2.setText(id);
-            holder.itemView.setTag(str);
+            holder.itemView.setTag(sensor);
         }
 
         @Override
@@ -176,7 +181,7 @@ public class BuildingActivity extends AppCompatActivity {
                         os.close();
                         response1 = os.toString();
 
-                        ArrayList<String> list = new ArrayList<>();
+                        ArrayList<Sensor> list = new ArrayList<>();
                         JSONObject jsonObject = new JSONObject(response1);
                         response = jsonObject.getString("data");
                         JSONArray jsonArray = new JSONArray(response);
@@ -185,8 +190,14 @@ public class BuildingActivity extends AppCompatActivity {
                             String id  = jsonObject1.getString("id");
                             String time = jsonObject1.getString("update_at");
                             Double value = jsonObject1.getDouble("current_value");
-                            String data = id + device + value + time;
-                            list.add(data);
+                            double value1 = value.doubleValue();
+
+                            Sensor sensor = new Sensor();
+                            sensor.setId(id);
+                            sensor.setUpdateAt(time);
+                            sensor.setCurrentValue(value1);
+
+                            list.add(sensor);
                         }
 
                         Message message = new Message();
@@ -207,15 +218,16 @@ public class BuildingActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case SHOW_RESPONSE:
-                    ArrayList<String> list = (ArrayList<String>) msg.obj;
+                    ArrayList<Sensor> list = (ArrayList<Sensor>) msg.obj;
                     mDatas = list;
                     MyAdapter adapter = new MyAdapter();
                     mRecyclerViewBuilding.setAdapter(adapter);
                     adapter.setOnItemClickListener(new OnRecyclerViewItemClickListener() {
                         @Override
-                        public void onItemClick(View view, String data) {
+                        public void onItemClick(View view, Sensor data) {
                             Intent intent = new Intent(BuildingActivity.this, LineDrawActivity.class);
                             intent.putExtra("data", data);
+                            intent.putExtra("device", device);
                             startActivity(intent);
                         }
                     });
