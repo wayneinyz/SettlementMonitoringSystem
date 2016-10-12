@@ -105,7 +105,7 @@ public class SensorActivity extends AppCompatActivity {
         public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
         {
             View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_activity_building, parent, false);
+                    .inflate(R.layout.item_activity_sensor, parent, false);
 
             view.setOnClickListener(new View.OnClickListener() {
                 @Override

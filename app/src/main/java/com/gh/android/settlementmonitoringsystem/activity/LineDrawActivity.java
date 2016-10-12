@@ -50,7 +50,7 @@ public class LineDrawActivity extends AppCompatActivity {
     private Button mButtonRefresh;
     private TextView mTextView;
     private LineChart mLineChart;
-    private Button mButton1;
+    private TextView mTextView1;
 
     private String hour = "";
     private String minute = "";
@@ -110,8 +110,8 @@ public class LineDrawActivity extends AppCompatActivity {
         mTextView = (TextView) findViewById(R.id.text_refresh);
         mTextView.setText(time1);
 
-        mButton1 = (Button) findViewById(R.id.button1);
-        mButton1.setText(value + "");
+        mTextView1 = (TextView) findViewById(R.id.textview1);
+        mTextView1.setText(value + "");
 
         mLineChart = (LineChart) findViewById(R.id.line_chart);
 
@@ -140,7 +140,7 @@ public class LineDrawActivity extends AppCompatActivity {
         mLineChart.setDrawBorders(false);  //是否在折线图上添加边框
 
         // no description text
-        mLineChart.setDescription("线性图表");// 数据描述
+        mLineChart.setDescription("沉降监测折线图");// 数据描述
         // 如果没有数据的时候，会显示这个，类似listview的emtpyview
         mLineChart.setNoDataTextDescription("You need to provide data for the chart.");
 
@@ -313,12 +313,13 @@ public class LineDrawActivity extends AppCompatActivity {
                             for (int j = 0; j < jsonArray2.length(); j++) {
                                 JSONObject jsonObject3 = jsonArray2.getJSONObject(j);
                                 String time = jsonObject3.getString("at");
+                                String time1 = time.substring(0, 16);
                                 Double value = jsonObject3.getDouble("value");
                                 double value1 = value.doubleValue();
 
                                 Sensor sensor = new Sensor();
                                 sensor.setCurrentValue(value1);
-                                sensor.setUpdateAt(time);
+                                sensor.setUpdateAt(time1);
                                 list.add(sensor);
                             }
                         }
