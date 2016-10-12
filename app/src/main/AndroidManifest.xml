@@ -20,7 +20,7 @@
         <activity android:name=".activity.CdkeyActivity"
             android:parentActivityName=".activity.MainActivity">
         </activity>
-        <activity android:name=".activity.BuildingActivity">
+        <activity android:name=".activity.SensorActivity">
         </activity>
         <activity android:name=".activity.LineDrawActivity"
             android:screenOrientation="landscape">

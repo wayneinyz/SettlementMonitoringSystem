@@ -31,9 +31,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class BuildingActivity extends AppCompatActivity {
+public class SensorActivity extends AppCompatActivity {
 
-    private static final String TAG = "BuildingActivity";
+    private static final String TAG = "SensorActivity";
     private static final String ApiKey = "=bpjjea4wgLMd2xKVti6=DTw0mI=";
     private static final int SHOW_RESPONSE = 0;
 
@@ -50,7 +50,7 @@ public class BuildingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.activity_building);
+        setContentView(R.layout.activity_sensor);
 
         mTextView = (TextView) findViewById(R.id.data_text_view);
         Intent intent = getIntent();
@@ -225,7 +225,7 @@ public class BuildingActivity extends AppCompatActivity {
                     adapter.setOnItemClickListener(new OnRecyclerViewItemClickListener() {
                         @Override
                         public void onItemClick(View view, Sensor data) {
-                            Intent intent = new Intent(BuildingActivity.this, LineDrawActivity.class);
+                            Intent intent = new Intent(SensorActivity.this, LineDrawActivity.class);
                             intent.putExtra("data", data);
                             intent.putExtra("device", device);
                             startActivity(intent);

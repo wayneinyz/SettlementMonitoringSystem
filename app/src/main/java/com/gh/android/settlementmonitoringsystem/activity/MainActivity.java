@@ -289,7 +289,7 @@ public class MainActivity extends AppCompatActivity {
                     adapter.setOnItemClickListener(new OnRecyclerViewItemClickListener() {
                         @Override
                         public void onItemClick(View view, Device data) {
-                            Intent intent = new Intent(MainActivity.this, BuildingActivity.class);
+                            Intent intent = new Intent(MainActivity.this, SensorActivity.class);
                             intent.putExtra("data", data);
                             startActivity(intent);
                         }
