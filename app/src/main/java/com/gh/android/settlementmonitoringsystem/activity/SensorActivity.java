@@ -128,7 +128,7 @@ public class SensorActivity extends AppCompatActivity {
             String id = sensor.getId();
             double value = sensor.getCurrentValue();
             holder.mTextView.setText(id);
-            holder.mText1.setText(value + "");
+            holder.mText1.setText(value + "mm");
 //            holder.mText2.setText(id);
             holder.itemView.setTag(sensor);
         }

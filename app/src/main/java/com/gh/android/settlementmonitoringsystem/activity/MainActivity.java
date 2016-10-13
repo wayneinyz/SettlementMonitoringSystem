@@ -47,12 +47,12 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView mRecyclerView;
     private Button mButtonReferenceTime;
 
-    private List<Device> mDatas;
     Date date;
     private String hour = "";
     private String minute = "";
 
     private MyApplication app;
+    private MyAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +77,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        app = (MyApplication) getApplication();
+        mRecyclerView = (RecyclerView) findViewById(R.id.main_recycler_view);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         mButtonFreshList = (Button) findViewById(R.id.button_refresh_list);
         mButtonFreshList.setOnClickListener(new View.OnClickListener() {
@@ -87,9 +88,6 @@ public class MainActivity extends AppCompatActivity {
                 sendRequest();
             }
         });
-
-        mRecyclerView = (RecyclerView) findViewById(R.id.main_recycler_view);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         mButtonReferenceTime = (Button) findViewById(R.id.button_reference_time);
         Date mDate = new Date();
@@ -104,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        app = (MyApplication) getApplication();
         app.setRefDate((String) mButtonReferenceTime.getText());
     }
 
@@ -171,6 +170,12 @@ public class MainActivity extends AppCompatActivity {
 
         private OnRecyclerViewItemClickListener mOnItemClickListener = null;
 
+        private List<Device> mDatas;
+
+        public MyAdapter(List<Device> datas) {
+            mDatas = datas;
+        }
+
         @Override
         public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
         {
@@ -195,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
         {
             Device device = mDatas.get(position);
             String title = device.getTitle();
+
             holder.textView.setText(title);
             holder.itemView.setTag(device);
         }
@@ -202,6 +208,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public int getItemCount() {
             return mDatas.size();
+        }
+
+        public void setDevices(List<Device> devices) {
+            mDatas = devices;
         }
 
         public void setOnItemClickListener(OnRecyclerViewItemClickListener listener) {
@@ -215,7 +225,6 @@ public class MainActivity extends AppCompatActivity {
                 super(view);
                 textView = (TextView) view.findViewById(R.id.id_num);
             }
-
         }
     }
 
@@ -280,10 +289,9 @@ public class MainActivity extends AppCompatActivity {
             switch (msg.what) {
                 case SHOW_RESPONSE:
                     ArrayList<Device> list = (ArrayList<Device>) msg.obj;
-                    mDatas = list;
-                    MyAdapter adapter = new MyAdapter();
-                    mRecyclerView.setAdapter(adapter);
-                    adapter.setOnItemClickListener(new OnRecyclerViewItemClickListener() {
+                    mAdapter = new MyAdapter(list);
+                    mRecyclerView.setAdapter(mAdapter);
+                    mAdapter.setOnItemClickListener(new OnRecyclerViewItemClickListener() {
                         @Override
                         public void onItemClick(View view, Device data) {
                             Intent intent = new Intent(MainActivity.this, SensorActivity.class);
