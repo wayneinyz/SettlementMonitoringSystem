@@ -350,7 +350,6 @@ public class LineDrawActivity extends AppCompatActivity {
                         double value = list.get(i).getCurrentValue();
                         Float value1 = new Float(value);
                         values.add(value1);
-//                        Log.i(TAG, value1 + "");
 
                         String time = list.get(i).getUpdateAt();
                         times.add(time);

@@ -104,6 +104,9 @@ public class MainActivity extends AppCompatActivity {
 
         app = (MyApplication) getApplication();
         app.setRefDate((String) mButtonReferenceTime.getText());
+
+        // 网络请求
+        sendRequest();
     }
 
     private void showTimeDialog()
