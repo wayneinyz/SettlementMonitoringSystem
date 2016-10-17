@@ -7,7 +7,6 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -103,10 +102,12 @@ public class SensorActivity extends AppCompatActivity {
 
         private OnRecyclerViewItemClickListener mOnItemClickListener = null;
 
-        private List<Sensor> mDatas;
+        private List<Sensor> mDatas1;
+        private List<Sensor> mDatas2;
 
-        public MyAdapter(List<Sensor> datas) {
-            mDatas = datas;
+        public MyAdapter(List<Sensor> datas1, List<Sensor> datas2) {
+            mDatas1 = datas1;
+            mDatas2 = datas2;
         }
 
         @Override
@@ -132,18 +133,20 @@ public class SensorActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(MyViewHolder holder, int position)
         {
-            Sensor sensor = mDatas.get(position);
-            String id = sensor.getId();
-            double value = sensor.getCurrentValue();
+            Sensor sensor1 = mDatas1.get(position);
+            Sensor sensor2 = mDatas2.get(position);
+            String id = sensor2.getId();
+            double value = sensor1.getCurrentValue();
+
             holder.mTextView.setText(id);
             holder.mText1.setText(value + "mm");
             holder.mText2.setText(value + "mm");
-            holder.itemView.setTag(sensor);
+            holder.itemView.setTag(sensor1);
         }
 
         @Override
         public int getItemCount() {
-            return mDatas.size();
+            return mDatas2.size();
         }
 
         public void setOnItemClickListener(OnRecyclerViewItemClickListener listener) {
@@ -309,15 +312,28 @@ public class SensorActivity extends AppCompatActivity {
             switch (msg.what) {
                 case SHOW_RESPONSE:
                     ArrayList<Sensor> list = (ArrayList<Sensor>) msg.obj;
+                    ArrayList<Sensor> list1 = new ArrayList<>();
+                    ArrayList<Sensor> list2 = new ArrayList<>();
 
                     for (int i = 0; i < list.size(); i++) {
                         String time = list.get(i).getCreateTime();
                         String time1 = time.substring(0, 16);
                         String time2 = time1.replaceAll(" ", "T");
-                        Log.i(TAG, time2);
+//                        Log.i(TAG, time2);
                     }
 
-                    mAdapter = new MyAdapter(list);
+                    //判断是否包含汉字
+                    for (int i = 0; i < list.size(); i++) {
+                        Sensor sensor = list.get(i);
+                        String id = sensor.getId();
+                        if (id.getBytes().length == id.length()) {
+                            list1.add(sensor);
+                        } else {
+                            list2.add(sensor);
+                        }
+                    }
+
+                    mAdapter = new MyAdapter(list1, list2);
                     mRecyclerViewBuilding.setAdapter(mAdapter);
                     mAdapter.setOnItemClickListener(new OnRecyclerViewItemClickListener() {
                         @Override
