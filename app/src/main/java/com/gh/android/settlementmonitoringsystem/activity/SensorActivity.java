@@ -7,6 +7,7 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,14 +37,15 @@ public class SensorActivity extends AppCompatActivity {
     private static final String TAG = "SensorActivity";
     private static final String ApiKey = "=bpjjea4wgLMd2xKVti6=DTw0mI=";
     private static final int SHOW_RESPONSE = 0;
+    private static final int SHOW_RESPONSE_1 = 1;
 
     private TextView mTextView;
     private TextView mTextViewReference;
     private TextView mTextViewCollect;
     private Button mButtonRefreshData;
     private RecyclerView mRecyclerViewBuilding;
+    private MyAdapter mAdapter;
 
-    private List<Sensor> mDatas;
     private String device;
 
     @Override
@@ -101,6 +103,12 @@ public class SensorActivity extends AppCompatActivity {
 
         private OnRecyclerViewItemClickListener mOnItemClickListener = null;
 
+        private List<Sensor> mDatas;
+
+        public MyAdapter(List<Sensor> datas) {
+            mDatas = datas;
+        }
+
         @Override
         public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
         {
@@ -129,7 +137,7 @@ public class SensorActivity extends AppCompatActivity {
             double value = sensor.getCurrentValue();
             holder.mTextView.setText(id);
             holder.mText1.setText(value + "mm");
-//            holder.mText2.setText(id);
+            holder.mText2.setText(value + "mm");
             holder.itemView.setTag(sensor);
         }
 
@@ -171,7 +179,7 @@ public class SensorActivity extends AppCompatActivity {
                     if (conn.getResponseCode() == 200) {  //返回码是200，网络正常
                         InputStream in = conn.getInputStream();
                         ByteArrayOutputStream os = new ByteArrayOutputStream();
-                        String response1, response;
+                        String response1;
                         int len;
                         byte buffer[] = new byte[1024];
                         while ((len = in.read(buffer)) != -1) {
@@ -181,27 +189,76 @@ public class SensorActivity extends AppCompatActivity {
                         os.close();
                         response1 = os.toString();
 
+                        //解析
+                        parseJSONObject(response1);
+
+                    }else {
+                        //返回码不是200，网络异常
+                    }
+                }  catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private void sendRequest(final String id, final String start) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                HttpURLConnection conn;
+                try {
+                    URL url = new URL("http://api.heclouds.com/devices/" + device + "/datapoints"
+                            + "?datastream_id=" + id + "&start=" + start);
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("GET");
+                    conn.setConnectTimeout(15 * 1000);
+                    conn.setRequestProperty("api-key", ApiKey);
+                    if (conn.getResponseCode() == 200) {  //返回码是200，网络正常
+                        InputStream in = conn.getInputStream();
+                        ByteArrayOutputStream os = new ByteArrayOutputStream();
+                        int len;
+                        byte buffer[] = new byte[1024];
+                        while ((len = in.read(buffer)) != -1) {
+                            os.write(buffer, 0, len);
+                        }
+                        in.close();
+                        os.close();
+                        String response1 = os.toString();
+//                        Log.i(TAG, response1);
+
+                        JSONObject jsonObject1 = new JSONObject(response1);
+                        String response2 = jsonObject1.getJSONObject("data").getString("datastreams");
+                        Integer count = jsonObject1.getJSONObject("data").getInt("count");
+                        int count1  = count.intValue();
+//                        Log.i(TAG, response2);
+
                         ArrayList<Sensor> list = new ArrayList<>();
-                        JSONObject jsonObject = new JSONObject(response1);
-                        response = jsonObject.getString("data");
-                        JSONArray jsonArray = new JSONArray(response);
-                        for (int i = 0; i < jsonArray.length(); i++) {
-                            JSONObject jsonObject1 = jsonArray.getJSONObject(i);
-                            String id  = jsonObject1.getString("id");
-                            String time = jsonObject1.getString("update_at");
-                            Double value = jsonObject1.getDouble("current_value");
-                            double value1 = value.doubleValue();
 
-                            Sensor sensor = new Sensor();
-                            sensor.setId(id);
-                            sensor.setUpdateAt(time);
-                            sensor.setCurrentValue(value1);
+                        JSONArray jsonArray1 = new JSONArray(response2);
+                        for (int i = 0; i < jsonArray1.length(); i++) {
+                            JSONObject jsonObject2 = jsonArray1.getJSONObject(i);
+                            String response3 = jsonObject2.getString("datapoints");
+//                            Log.i(TAG, response3);
 
-                            list.add(sensor);
+                            JSONArray jsonArray2 = new JSONArray(response3);
+                            for (int j = 0; j < jsonArray2.length(); j++) {
+                                JSONObject jsonObject3 = jsonArray2.getJSONObject(j);
+                                String time = jsonObject3.getString("at");
+                                String time1 = time.substring(0, 16);
+                                Double value = jsonObject3.getDouble("value");
+                                double value1 = value.doubleValue();
+
+                                Sensor sensor = new Sensor();
+                                sensor.setCurrentValue(value1);
+                                sensor.setUpdateAt(time1);
+                                list.add(sensor);
+                            }
                         }
 
                         Message message = new Message();
-                        message.what = SHOW_RESPONSE;
+                        message.what = SHOW_RESPONSE_1;
+                        message.arg1 = count1;
                         message.obj = list;
                         mHandler.sendMessage(message);
                     }else {
@@ -214,15 +271,55 @@ public class SensorActivity extends AppCompatActivity {
         }).start();
     }
 
+    private void parseJSONObject(String response1) {
+        String response;
+        ArrayList<Sensor> list = new ArrayList<>();
+        try {
+            JSONObject jsonObject = new JSONObject(response1);
+            response = jsonObject.getString("data");
+            JSONArray jsonArray = new JSONArray(response);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+                String id  = jsonObject1.getString("id");
+                String time = jsonObject1.getString("update_at");
+                Double value = jsonObject1.getDouble("current_value");
+                double value1 = value.doubleValue();
+                String time1 = jsonObject1.getString("create_time");
+
+                Sensor sensor = new Sensor();
+                sensor.setId(id);
+                sensor.setUpdateAt(time);
+                sensor.setCurrentValue(value1);
+                sensor.setCreateTime(time1);
+
+                list.add(sensor);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Message message = new Message();
+        message.what = SHOW_RESPONSE;
+        message.obj = list;
+        mHandler.sendMessage(message);
+    }
+
     private Handler mHandler = new Handler() {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case SHOW_RESPONSE:
                     ArrayList<Sensor> list = (ArrayList<Sensor>) msg.obj;
-                    mDatas = list;
-                    MyAdapter adapter = new MyAdapter();
-                    mRecyclerViewBuilding.setAdapter(adapter);
-                    adapter.setOnItemClickListener(new OnRecyclerViewItemClickListener() {
+
+                    for (int i = 0; i < list.size(); i++) {
+                        String time = list.get(i).getCreateTime();
+                        String time1 = time.substring(0, 16);
+                        String time2 = time1.replaceAll(" ", "T");
+                        Log.i(TAG, time2);
+                    }
+
+                    mAdapter = new MyAdapter(list);
+                    mRecyclerViewBuilding.setAdapter(mAdapter);
+                    mAdapter.setOnItemClickListener(new OnRecyclerViewItemClickListener() {
                         @Override
                         public void onItemClick(View view, Sensor data) {
                             Intent intent = new Intent(SensorActivity.this, LineDrawActivity.class);

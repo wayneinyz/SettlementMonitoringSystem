@@ -213,10 +213,6 @@ public class MainActivity extends AppCompatActivity {
             return mDatas.size();
         }
 
-        public void setDevices(List<Device> devices) {
-            mDatas = devices;
-        }
-
         public void setOnItemClickListener(OnRecyclerViewItemClickListener listener) {
             this.mOnItemClickListener = listener;
         }

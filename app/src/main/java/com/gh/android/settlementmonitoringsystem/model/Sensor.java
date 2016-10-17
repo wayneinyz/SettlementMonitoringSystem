@@ -7,6 +7,7 @@ public class Sensor implements Serializable {
     private String id;
     private double currentValue;
     private String updateAt;
+    private String createTime;
 
     public String getId() {
         return id;
@@ -30,5 +31,13 @@ public class Sensor implements Serializable {
 
     public void setUpdateAt(String updateAt) {
         this.updateAt = updateAt;
+    }
+
+    public String getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(String createTime) {
+        this.createTime = createTime;
     }
 }
