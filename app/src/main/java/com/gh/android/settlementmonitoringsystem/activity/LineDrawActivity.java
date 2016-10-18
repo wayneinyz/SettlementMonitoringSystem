@@ -293,42 +293,10 @@ public class LineDrawActivity extends AppCompatActivity {
                         in.close();
                         os.close();
                         String response1 = os.toString();
-//                        Log.i(TAG, response1);
 
-                        JSONObject jsonObject1 = new JSONObject(response1);
-                        String response2 = jsonObject1.getJSONObject("data").getString("datastreams");
-                        Integer count = jsonObject1.getJSONObject("data").getInt("count");
-                        int count1  = count.intValue();
-//                        Log.i(TAG, response2);
+                        //解析
+                        parseJSONObject(response1);
 
-                        ArrayList<Sensor> list = new ArrayList<>();
-
-                        JSONArray jsonArray1 = new JSONArray(response2);
-                        for (int i = 0; i < jsonArray1.length(); i++) {
-                            JSONObject jsonObject2 = jsonArray1.getJSONObject(i);
-                            String response3 = jsonObject2.getString("datapoints");
-//                            Log.i(TAG, response3);
-
-                            JSONArray jsonArray2 = new JSONArray(response3);
-                            for (int j = 0; j < jsonArray2.length(); j++) {
-                                JSONObject jsonObject3 = jsonArray2.getJSONObject(j);
-                                String time = jsonObject3.getString("at");
-                                String time1 = time.substring(0, 16);
-                                Double value = jsonObject3.getDouble("value");
-                                double value1 = value.doubleValue();
-
-                                Sensor sensor = new Sensor();
-                                sensor.setCurrentValue(value1);
-                                sensor.setUpdateAt(time1);
-                                list.add(sensor);
-                            }
-                        }
-
-                        Message message = new Message();
-                        message.what = SHOW_RESPONSE;
-                        message.arg1 = count1;
-                        message.obj = list;
-                        mHandler.sendMessage(message);
                     }else {
                         //返回码不是200，网络异常
                     }
@@ -337,6 +305,45 @@ public class LineDrawActivity extends AppCompatActivity {
                 }
             }
         }).start();
+    }
+
+    private void parseJSONObject(String response1) {
+        ArrayList<Sensor> list = new ArrayList<>();
+        int count1 = 0;
+        try {
+            JSONObject jsonObject1 = new JSONObject(response1);
+            String response2 = jsonObject1.getJSONObject("data").getString("datastreams");
+            Integer count = jsonObject1.getJSONObject("data").getInt("count");
+            count1  = count.intValue();
+
+            JSONArray jsonArray1 = new JSONArray(response2);
+            for (int i = 0; i < jsonArray1.length(); i++) {
+                JSONObject jsonObject2 = jsonArray1.getJSONObject(i);
+                String response3 = jsonObject2.getString("datapoints");
+
+                JSONArray jsonArray2 = new JSONArray(response3);
+                for (int j = 0; j < jsonArray2.length(); j++) {
+                    JSONObject jsonObject3 = jsonArray2.getJSONObject(j);
+                    String time = jsonObject3.getString("at");
+                    String time1 = time.substring(0, 16);
+                    Double value = jsonObject3.getDouble("value");
+                    double value1 = value.doubleValue();
+
+                    Sensor sensor = new Sensor();
+                    sensor.setCurrentValue(value1);
+                    sensor.setUpdateAt(time1);
+                    list.add(sensor);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Message message = new Message();
+        message.what = SHOW_RESPONSE;
+        message.arg1 = count1;
+        message.obj = list;
+        mHandler.sendMessage(message);
     }
 
     private Handler mHandler = new Handler() {

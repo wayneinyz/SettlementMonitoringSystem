@@ -173,6 +173,7 @@ public class SensorActivity extends AppCompatActivity {
             @Override
             public void run() {
                 HttpURLConnection conn;
+                ArrayList<Sensor> list = new ArrayList<>();
                 try {
                     URL url = new URL("http://api.heclouds.com/devices/" + device + "/datastreams");
                     conn = (HttpURLConnection) url.openConnection();
@@ -193,7 +194,8 @@ public class SensorActivity extends AppCompatActivity {
                         response1 = os.toString();
 
                         //解析
-                        parseJSONObject(response1);
+                        list = parseJSONObject(response1);
+
 
                     }else {
                         //返回码不是200，网络异常
@@ -201,80 +203,16 @@ public class SensorActivity extends AppCompatActivity {
                 }  catch (Exception e) {
                     e.printStackTrace();
                 }
+
+                Message message = new Message();
+                message.what = SHOW_RESPONSE;
+                message.obj = list;
+                mHandler.sendMessage(message);
             }
         }).start();
     }
 
-    private void sendRequest(final String id, final String start) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                HttpURLConnection conn;
-                try {
-                    URL url = new URL("http://api.heclouds.com/devices/" + device + "/datapoints"
-                            + "?datastream_id=" + id + "&start=" + start);
-                    conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("GET");
-                    conn.setConnectTimeout(15 * 1000);
-                    conn.setRequestProperty("api-key", ApiKey);
-                    if (conn.getResponseCode() == 200) {  //返回码是200，网络正常
-                        InputStream in = conn.getInputStream();
-                        ByteArrayOutputStream os = new ByteArrayOutputStream();
-                        int len;
-                        byte buffer[] = new byte[1024];
-                        while ((len = in.read(buffer)) != -1) {
-                            os.write(buffer, 0, len);
-                        }
-                        in.close();
-                        os.close();
-                        String response1 = os.toString();
-//                        Log.i(TAG, response1);
-
-                        JSONObject jsonObject1 = new JSONObject(response1);
-                        String response2 = jsonObject1.getJSONObject("data").getString("datastreams");
-                        Integer count = jsonObject1.getJSONObject("data").getInt("count");
-                        int count1  = count.intValue();
-//                        Log.i(TAG, response2);
-
-                        ArrayList<Sensor> list = new ArrayList<>();
-
-                        JSONArray jsonArray1 = new JSONArray(response2);
-                        for (int i = 0; i < jsonArray1.length(); i++) {
-                            JSONObject jsonObject2 = jsonArray1.getJSONObject(i);
-                            String response3 = jsonObject2.getString("datapoints");
-//                            Log.i(TAG, response3);
-
-                            JSONArray jsonArray2 = new JSONArray(response3);
-                            for (int j = 0; j < jsonArray2.length(); j++) {
-                                JSONObject jsonObject3 = jsonArray2.getJSONObject(j);
-                                String time = jsonObject3.getString("at");
-                                String time1 = time.substring(0, 16);
-                                Double value = jsonObject3.getDouble("value");
-                                double value1 = value.doubleValue();
-
-                                Sensor sensor = new Sensor();
-                                sensor.setCurrentValue(value1);
-                                sensor.setUpdateAt(time1);
-                                list.add(sensor);
-                            }
-                        }
-
-                        Message message = new Message();
-                        message.what = SHOW_RESPONSE_1;
-                        message.arg1 = count1;
-                        message.obj = list;
-                        mHandler.sendMessage(message);
-                    }else {
-                        //返回码不是200，网络异常
-                    }
-                }  catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-    }
-
-    private void parseJSONObject(String response1) {
+    private ArrayList<Sensor> parseJSONObject(String response1) {
         String response;
         ArrayList<Sensor> list = new ArrayList<>();
         try {
@@ -301,10 +239,7 @@ public class SensorActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        Message message = new Message();
-        message.what = SHOW_RESPONSE;
-        message.obj = list;
-        mHandler.sendMessage(message);
+        return list;
     }
 
     private Handler mHandler = new Handler() {
