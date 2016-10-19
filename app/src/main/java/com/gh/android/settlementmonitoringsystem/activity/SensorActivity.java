@@ -36,7 +36,6 @@ public class SensorActivity extends AppCompatActivity {
     private static final String TAG = "SensorActivity";
     private static final String ApiKey = "=bpjjea4wgLMd2xKVti6=DTw0mI=";
     private static final int SHOW_RESPONSE = 0;
-    private static final int SHOW_RESPONSE_1 = 1;
 
     private TextView mTextView;
     private TextView mTextViewReference;
@@ -73,9 +72,6 @@ public class SensorActivity extends AppCompatActivity {
         mTextViewCollect.setText(str);
         app.setColDate(str);
 
-        //网络请求
-        sendRequest();
-
         mButtonRefreshData = (Button) findViewById(R.id.button_reference_data);
         mButtonRefreshData.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,6 +88,9 @@ public class SensorActivity extends AppCompatActivity {
 
         mRecyclerViewBuilding = (RecyclerView) findViewById(R.id.building_recycler_view);
         mRecyclerViewBuilding.setLayoutManager(new LinearLayoutManager(this));
+
+        //网络请求
+        sendRequest();
     }
 
     public interface OnRecyclerViewItemClickListener {
@@ -224,13 +223,12 @@ public class SensorActivity extends AppCompatActivity {
                 String id  = jsonObject1.getString("id");
                 String time = jsonObject1.getString("update_at");
                 Double value = jsonObject1.getDouble("current_value");
-                double value1 = value.doubleValue();
                 String time1 = jsonObject1.getString("create_time");
 
                 Sensor sensor = new Sensor();
                 sensor.setId(id);
                 sensor.setUpdateAt(time);
-                sensor.setCurrentValue(value1);
+                sensor.setCurrentValue(value);
                 sensor.setCreateTime(time1);
 
                 list.add(sensor);

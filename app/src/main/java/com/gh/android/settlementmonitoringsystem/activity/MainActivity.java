@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
                     if (conn.getResponseCode() == 200) {  //返回码是200，网络正常
                         InputStream in = conn.getInputStream();
                         ByteArrayOutputStream os = new ByteArrayOutputStream();
-                        String response1, response;
+                        String response1;
                         int len;
                         byte buffer[] = new byte[1024];
                         while ((len = in.read(buffer)) != -1) {
@@ -250,29 +250,9 @@ public class MainActivity extends AppCompatActivity {
                         in.close();
                         os.close();
                         response1 = os.toString();
-//                        Log.i(TAG, response1);
 
-                        ArrayList<Device> list = new ArrayList<>();
-                        JSONObject jsonObject = new JSONObject(response1);
-                        response = jsonObject.getJSONObject("data").getString("devices");
-                        JSONArray jsonArray = new JSONArray(response);
-                        for (int i = 0; i < jsonArray.length(); i++) {
-                            JSONObject jsonObject1 = jsonArray.getJSONObject(i);
-                            String title = jsonObject1.getString("title");
-                            String id = jsonObject1.getString("id");
-
-                            Device device = new Device();
-                            device.setId(id);
-                            device.setTitle(title);
-
-                            if (!title.equals("CDKEY")) {
-                                list.add(device);
-                            }
-                        }
-                        Message message = new Message();
-                        message.what = SHOW_RESPONSE;
-                        message.obj = list;
-                        mHandler.sendMessage(message);
+                        //解析
+                        parseJSONObject(response1);
                     }else {
                         //返回码不是200，网络异常
                     }
@@ -281,6 +261,36 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }).start();
+    }
+
+    private void parseJSONObject(String response1) {
+        ArrayList<Device> list = new ArrayList<>();
+        String response;
+        try {
+            JSONObject jsonObject = new JSONObject(response1);
+            response = jsonObject.getJSONObject("data").getString("devices");
+            JSONArray jsonArray = new JSONArray(response);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+                String title = jsonObject1.getString("title");
+                String id = jsonObject1.getString("id");
+
+                Device device = new Device();
+                device.setId(id);
+                device.setTitle(title);
+
+                if (!title.equals("CDKEY")) {
+                    list.add(device);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Message message = new Message();
+        message.what = SHOW_RESPONSE;
+        message.obj = list;
+        mHandler.sendMessage(message);
     }
 
     private Handler mHandler = new Handler() {

@@ -327,10 +327,9 @@ public class LineDrawActivity extends AppCompatActivity {
                     String time = jsonObject3.getString("at");
                     String time1 = time.substring(0, 16);
                     Double value = jsonObject3.getDouble("value");
-                    double value1 = value.doubleValue();
 
                     Sensor sensor = new Sensor();
-                    sensor.setCurrentValue(value1);
+                    sensor.setCurrentValue(value);
                     sensor.setUpdateAt(time1);
                     list.add(sensor);
                 }
