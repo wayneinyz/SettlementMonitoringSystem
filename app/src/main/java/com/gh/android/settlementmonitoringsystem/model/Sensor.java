@@ -7,7 +7,9 @@ public class Sensor implements Serializable {
     private String id;
     private double currentValue;
     private String updateAt;
-    private String createTime;
+    private double lastValue;
+    private String lastTime;
+    private float settleValue;
 
     public String getId() {
         return id;
@@ -33,11 +35,27 @@ public class Sensor implements Serializable {
         this.updateAt = updateAt;
     }
 
-    public String getCreateTime() {
-        return createTime;
+    public double getLastValue() {
+        return lastValue;
     }
 
-    public void setCreateTime(String createTime) {
-        this.createTime = createTime;
+    public void setLastValue(double lastValue) {
+        this.lastValue = lastValue;
+    }
+
+    public String getLastTime() {
+        return lastTime;
+    }
+
+    public void setLastTime(String lastTime) {
+        this.lastTime = lastTime;
+    }
+
+    public float getSettleValue() {
+        return settleValue;
+    }
+
+    public void setSettleValue(float settleValue) {
+        this.settleValue = settleValue;
     }
 }

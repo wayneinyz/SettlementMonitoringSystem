@@ -51,6 +51,7 @@ public class LineDrawActivity extends AppCompatActivity {
     private TextView mTextView;
     private LineChart mLineChart;
     private TextView mTextView1;
+    private TextView mTextView2;
 
     private String hour = "";
     private String minute = "";
@@ -74,6 +75,7 @@ public class LineDrawActivity extends AppCompatActivity {
         device = intent.getStringExtra("device");
         double value = sensor.getCurrentValue();
         String time = sensor.getUpdateAt();
+        float settleValue = sensor.getSettleValue();
 
         mButtonRefTime = (Button) findViewById(R.id.button_ref_time);
         MyApplication app = (MyApplication) getApplication();
@@ -111,7 +113,10 @@ public class LineDrawActivity extends AppCompatActivity {
         mTextView.setText(time1);
 
         mTextView1 = (TextView) findViewById(R.id.textview1);
-        mTextView1.setText(value + "");
+        mTextView1.setText(value + "mm");
+
+        mTextView2 = (TextView) findViewById(R.id.textview2);
+        mTextView2.setText(settleValue + "mm");
 
         mLineChart = (LineChart) findViewById(R.id.line_chart);
 
