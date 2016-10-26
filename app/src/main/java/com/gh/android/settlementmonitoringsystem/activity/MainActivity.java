@@ -2,6 +2,8 @@ package com.gh.android.settlementmonitoringsystem.activity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -10,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,9 +22,11 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.gh.android.settlementmonitoringsystem.MyApplication;
 import com.gh.android.settlementmonitoringsystem.R;
+import com.gh.android.settlementmonitoringsystem.database.MyDatabaseHelper;
 import com.gh.android.settlementmonitoringsystem.model.Device;
 
 import org.json.JSONArray;
@@ -41,7 +46,10 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private static final int SHOW_RESPONSE = 0;
+    private static final int SHOW_RESPONSE_1 = 1;
     private static final String ApiKey = "=bpjjea4wgLMd2xKVti6=DTw0mI=";
+    private static final String DeviceID = "3420157";
+    private static final String DataStream = "CDKEY";
 
     private Button mButtonFreshList;
     private RecyclerView mRecyclerView;
@@ -54,11 +62,17 @@ public class MainActivity extends AppCompatActivity {
     private MyApplication app;
     private MyAdapter mAdapter;
 
+    private long mCdkey = 0;
+    private long cdkey;
+    private MyDatabaseHelper mDbHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
+
+        mDbHelper = new MyDatabaseHelper(this, 1);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.inflateMenu(R.menu.menu_activity_main);
@@ -84,8 +98,20 @@ public class MainActivity extends AppCompatActivity {
         mButtonFreshList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 网络请求
-                sendRequest();
+                // 读取数据库中的CDKEY
+                SQLiteDatabase db = mDbHelper.getWritableDatabase();
+                Cursor cursor = db.query("cdkey", null, null, null, null, null, null);
+                if (cursor.moveToFirst()) {
+                    do {
+                        mCdkey = cursor.getLong(cursor.getColumnIndex("cdkey"));
+                        Log.i(TAG, mCdkey + "");
+                    } while (cursor.moveToNext());
+                }
+                cursor.close();
+
+                // 网络请求更新CDKEY
+                sendRequestForCdkey();
+
             }
         });
 
@@ -107,6 +133,56 @@ public class MainActivity extends AppCompatActivity {
 
         // 网络请求
         sendRequest();
+    }
+
+    private void sendRequestForCdkey() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                HttpURLConnection conn;
+                try {
+                    URL url = new URL("http://api.heclouds.com/devices/" + DeviceID + "/datastreams/" + DataStream);
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("GET");
+                    conn.setConnectTimeout(15 * 1000);
+                    conn.setRequestProperty("api-key", ApiKey);
+                    if (conn.getResponseCode() == 200) {  //返回码是200，网络正常
+                        InputStream in = conn.getInputStream();
+                        ByteArrayOutputStream os = new ByteArrayOutputStream();
+                        String response1;
+                        int len = 0;
+                        byte buffer[] = new byte[1024];
+                        while ((len = in.read(buffer)) != -1) {
+                            os.write(buffer, 0, len);
+                        }
+                        in.close();
+                        os.close();
+                        response1 = os.toString();
+
+                        parseJSONObjectForCdkey(response1);
+                    }else {
+                        //返回码不是200，网络异常
+                    }
+                }  catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private void parseJSONObjectForCdkey(String response1) {
+        long response = 0;
+        try {
+            JSONObject jsonObject = new JSONObject(response1);
+            response = jsonObject.getJSONObject("data").getLong("current_value");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Message message = new Message();
+        message.what = SHOW_RESPONSE_1;
+        message.obj = response;
+        mHandler.sendMessage(message);
     }
 
     private void showTimeDialog()
@@ -308,6 +384,21 @@ public class MainActivity extends AppCompatActivity {
                             startActivity(intent);
                         }
                     });
+                    break;
+                case SHOW_RESPONSE_1:
+                    cdkey = (long) msg.obj;
+                    Log.i(TAG, cdkey + "a");
+
+                    if (mCdkey == 0) {
+                        Toast.makeText(MainActivity.this, "请先校验CDKEY！", Toast.LENGTH_SHORT).show();
+                    } else if (mCdkey == cdkey) {
+                        // 网络请求
+                        sendRequest();
+                        Toast.makeText(MainActivity.this, "已刷新设备列表！", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, "CDKEY已过期，请重新校验！", Toast.LENGTH_SHORT).show();
+                    }
+                    break;
             }
         }
     };

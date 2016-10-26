@@ -8,7 +8,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -87,6 +86,7 @@ public class LineDrawActivity extends AppCompatActivity {
                 showTimeDialog("参考时间设置", mButtonRefTime);
             }
         });
+        //参考时间点
         start = timeTrans(dateRef);
 
         mButtonColTime = (Button) findViewById(R.id.button_col_time);
@@ -98,9 +98,10 @@ public class LineDrawActivity extends AppCompatActivity {
                 showTimeDialog("采集时间设置", mButtonColTime);
             }
         });
+        //采集时间点
         end = timeTrans(dateCol);
 
-        // 显示日期
+        // 显示格式化日期
         Date date;
         String time1 = null;
         try {
@@ -112,14 +113,17 @@ public class LineDrawActivity extends AppCompatActivity {
         mTextView = (TextView) findViewById(R.id.text_refresh);
         mTextView.setText(time1);
 
+        //观测值
         mTextView1 = (TextView) findViewById(R.id.textview1);
         mTextView1.setText(value + "mm");
 
+        //沉降值
         mTextView2 = (TextView) findViewById(R.id.textview2);
         mTextView2.setText(settleValue + "mm");
 
         mLineChart = (LineChart) findViewById(R.id.line_chart);
 
+        //刷新网络请求
         mButtonRefresh = (Button) findViewById(R.id.button_refresh);
         mButtonRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -193,7 +197,7 @@ public class LineDrawActivity extends AppCompatActivity {
         // y轴的数据
         ArrayList<Entry> y = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            Log.i(TAG, values.get(i) + "a");
+//            Log.i(TAG, values.get(i) + "a");
             Entry entry = new Entry(values.get(i), i);
             y.add(entry);
         }
